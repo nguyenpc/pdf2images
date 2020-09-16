@@ -32,6 +32,7 @@ export interface Options {
   duplex?: boolean;
   ownerPassword?: string;
   userPassword?: string;
+  stdOut?: boolean;
 }
 
 const DEFAULT_BIN = 'pdftocairo';
@@ -147,8 +148,13 @@ class PDFToCairo {
 
   private tmps: string[] = [];
 
+  private options: Options = {
+    format: 'png',
+  };
+
   public constructor(file: string | Buffer, options: Options) {
     this.input = file;
+    this.options = options;
     this.bin = options.bin || process.env.PDFTOCAIRO_PATH || DEFAULT_BIN;
     this.args.push(...getOptionArgs(options));
   }
@@ -161,8 +167,11 @@ class PDFToCairo {
   public async output(outputFile?: string): Promise<Buffer[] | null> {
     // '-' means reading PDF file from stdin
     const inputPath = typeof this.input === 'string' ? this.input : '-';
-    const outputPath = outputFile || path.join(await this.makeTempDir(), 'result');
-
+    console.log(this.options)
+    const outputPath = this.options.stdOut ? '-' : (outputFile || path.join(await this.makeTempDir(), 'result'));
+    console.log(outputPath)
+    const data: any[] = [];
+    let buff: Buffer;
     this.args.push(inputPath, outputPath);
 
     const child = spawn(this.bin, this.args, { shell: true });
@@ -172,6 +181,14 @@ class PDFToCairo {
       child.stdin.write(this.input);
       child.stdin.end();
     }
+    if (this.options.stdOut) {
+      child.stdout.on('data', (dat: any) => {
+        data.push(dat);
+      });
+      child.stdout.on('end', () => {
+        buff = Buffer.concat(data);
+      });
+    }
 
     return new Promise((resolve, reject) => {
       child.on('close', async (code) => {
@@ -179,7 +196,9 @@ class PDFToCairo {
           reject(ERROR_MESSAGES[code]);
           return;
         }
-
+        if (this.options.stdOut) {
+          resolve([buff]);
+        } else
         if (typeof outputFile === 'string') {
           resolve(null);
         } else {
@@ -196,7 +215,7 @@ class PDFToCairo {
 
   private async makeTempDir(): Promise<string> {
     const uniqueId = crypto.randomBytes(16).toString('hex');
-    const outputPath = path.join('/tmp', uniqueId);
+    const outputPath = path.join(__dirname, uniqueId);
     await fs.promises.mkdir(outputPath);
     this.tmps.push(outputPath);
     return outputPath;

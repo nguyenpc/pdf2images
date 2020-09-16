@@ -7,6 +7,9 @@
 Node.js wrapper for pdftocairo - PDF to PNG/JPEG/TIFF/PDF/PS/EPS/SVG using cairo  
 Inspired by [jjwilly16/node-pdftk](https://github.com/jjwilly16/node-pdftk/)
 
+A fork from [node-pdftocairo](https://github.com/CodeDaraW/node-pdftocairo)
+Support stdOut as an option
+
 ## Requirements
 Since `pdftocairo` is included in [Poppler](https://poppler.freedesktop.org/), you should install `Poppler` before using this library.
 
@@ -78,3 +81,4 @@ Reference: [Ubuntu Manpage: pdftocairo](http://manpages.ubuntu.com/manpages/bion
 | `duplex` | Adds the %%IncludeFeature: *Duplex DuplexNoTumble DSC comment to the PostScript file (PS only). This tells the print manager to enable duplexing. | `boolean` | `false` |
 | `ownerPassword` | Specify the owner password for the PDF file. Providing this will bypass all security restrictions. | `string` | - |
 | `userPassword` | Specify the user password for the PDF file. | `string` | - |
+| `stdOut` | Using stdOut to capture output instead of temp files. | `boolean` | `false` |
