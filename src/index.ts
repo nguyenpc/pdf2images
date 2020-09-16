@@ -167,9 +167,7 @@ class PDFToCairo {
   public async output(outputFile?: string): Promise<Buffer[] | null> {
     // '-' means reading PDF file from stdin
     const inputPath = typeof this.input === 'string' ? this.input : '-';
-    console.log(this.options)
     const outputPath = this.options.stdOut ? '-' : (outputFile || path.join(await this.makeTempDir(), 'result'));
-    console.log(outputPath)
     const data: any[] = [];
     let buff: Buffer;
     this.args.push(inputPath, outputPath);
